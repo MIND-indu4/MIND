@@ -44,7 +44,7 @@ def get_project_root():
     except Exception as e:
         messagebox.showerror("ERROR CRÍTICO", f"Excepción al determinar PROJECT_ROOT:\n{e}")
         sys.exit(1)
-
+        
 PROJECT_ROOT = get_project_root()
 print(f"🔒 PROJECT_ROOT FINAL: {PROJECT_ROOT}")
 
@@ -77,17 +77,27 @@ class GameMenu:
         self.master = master
         self.main_project_root = PROJECT_ROOT
         
-        # ===== CONFIGURACIÓN DE VENTANA =====
-        master.attributes("-fullscreen", True)
-        master.bind("<Escape>", self.toggle_fullscreen)
-        
+        # ===== CONFIGURACIÓN DE VENTANA (CORREGIDO) =====
+        # Obtener dimensiones reales del monitor
         self.screen_width = master.winfo_screenwidth()
         self.screen_height = master.winfo_screenheight()
+        
+        # 1. Forzar geometría inicial al tamaño del monitor
+        master.geometry(f"{self.screen_width}x{self.screen_height}+0+0")
+        
+        # 2. Configurar Fullscreen
+        master.attributes("-fullscreen", True)
+        
+        # 3. REFUERZO PARA RASPBERRY: Re-aplicar fullscreen después de medio segundo
+        # Esto corrige el bug donde la barra de tareas tapa la ventana al inicio
+        master.after(500, lambda: master.attributes("-fullscreen", True))
+        
+        master.bind("<Escape>", self.toggle_fullscreen)
+        
         self.base_width = 1000
         self.base_height = 800
-        # Usar min para escalar siempre al factor más restrictivo y evitar desbordamientos
-        self.scale = min(self.screen_width / self.base_width, self.screen_height / self.base_height)
-        
+        self.scale = min(self.screen_width / self.base_width, self.screen_height / self.base_height
+
         # COLORES
         self.yellow_bg = "#FFDE59"
         self.white_frame_bg = "#FFFFFF"
